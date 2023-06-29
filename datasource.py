@@ -5,6 +5,7 @@ financedata包中的数据源类，目前基于tushare编写
 @author: Administrator
 """
 import tushare
+import configparser
 
 
 '''
@@ -26,6 +27,11 @@ class DataSource:
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super().__new__(cls)
+            
+            conf = configparser.ConfigParser()
+            conf.read('../config.ini',encoding="utf-8-sig")
+            cls.__token = conf.get('anapro', 'tushare')
+
             cls.__instance.__ts_api = tushare.pro_api(cls.__token)
         return cls.__instance
     
