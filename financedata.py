@@ -15,28 +15,30 @@ from funds import Funds
 
 source = DataSource()
 
+
 def sqlite_args(path=''):
 
-    if path=='':
+    if path == '':
         try:
             conf = configparser.ConfigParser()
-            conf.read('../config.ini',encoding="utf-8-sig")
+            conf.read('../config.ini', encoding="utf-8-sig")
             path = conf.get('sqlite', 'path')
         except:
-            if platform=='win32':
+            if platform == 'win32':
                 path = 'd:/workdir/default.db'
-            elif platform=='linux' or platform=='linux2':
+            elif platform == 'linux' or platform == 'linux2':
                 path = '/workdir/default.db'
             else:
                 path = ':memory:'
 
-    return {'db_type':'sqlite3', 'db_path':path}
+    return {'db_type': 'sqlite3', 'db_path': path}
+
 
 def redis_args():
     redis_dict = {}
-    
+
     conf = configparser.ConfigParser()
-    conf.read('../config.ini',encoding="utf-8-sig")
+    conf.read('../config.ini', encoding="utf-8-sig")
     redis_dict['host'] = conf.get('redis', 'host')
     redis_dict['port'] = conf.get('redis', 'port')
 
@@ -50,25 +52,26 @@ def redis_args():
     except:
         pass
 
-    return {'db_type':'redis', **redis_dict}
+    return {'db_type': 'redis', **redis_dict}
+
 
 class FinanceData:
     '''
     创建一个管理调度类，
     '''
-    
+
     _data_source = None
     _data_stroe = None
     _calendar = None
-    
+
     # 金融对象字典
     _finance_dict = {
-        'stocks':Stocks,
-        'indexes':Indexes,
-        'topindexes':TopIndexes,
-        'funds':Funds,
+        'stocks': Stocks,
+        'indexes': Indexes,
+        'topindexes': TopIndexes,
+        'funds': Funds,
     }
-    
+
     def __init__(self, db_type, **kwargs):
         '''
         :param db_type: 数据库类型，可选'redis'或'sqlite3'
@@ -77,10 +80,9 @@ class FinanceData:
         self._data_source = DataSource()
         self._data_stroe = DataStore(db_type=db_type, **kwargs)
         self._calendar = TradeCalendar(self._data_stroe)
-        
+
         #self.stocks = self._finance_dict["stocks"](self._data_stroe)
         for key in self._finance_dict.keys():
-            cmd = "self." + key + " = " + "self._finance_dict['" + key + "'](self._data_stroe)"
+            cmd = "self." + key + " = " + \
+                "self._finance_dict['" + key + "'](self._data_stroe)"
             exec(cmd)
-
-        

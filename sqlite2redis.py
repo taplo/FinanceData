@@ -22,7 +22,8 @@ def trans_string(c, r):
         # print(e[0], "'s data transed.")
         count += 1
         e = result.fetchone()
-    print('已转换 %d 条string类型数据。'%count)
+    print('已转换 %d 条string类型数据。' % count)
+
 
 def trans_hash(c, r):
     '''
@@ -37,7 +38,8 @@ def trans_hash(c, r):
         # print(e[0], "'s ", e[1], "'s data transed.")
         count += 1
         e = result.fetchone()
-    print('已转换 %d 条hash类型数据。'%count)
+    print('已转换 %d 条hash类型数据。' % count)
+
 
 def trans():
     print('开始转换...')
@@ -45,12 +47,12 @@ def trans():
     c = sq.cursor()
     pool = redis.ConnectionPool(host='MyRedis')
     r = redis.StrictRedis(connection_pool=pool)
-    
+
     trans_string(c, r)
     trans_hash(c, r)
     r.save()
     print('Redis Server 数据已保存。')
-    
+
     c.connection.close()
     r.connection_pool.disconnect()
     print("转换结束。")

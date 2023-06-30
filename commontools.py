@@ -18,9 +18,10 @@ import lzma
 列表分拆方法
 """
 
+
 def split_list(lst, lenth):
     '''按照固定长度拆分列表，返回分段索引。'''
-    if lenth>len(lst):
+    if lenth > len(lst):
         return [lst]
     else:
         start = array(list(range(0, len(lst), lenth)))
@@ -30,9 +31,9 @@ def split_list(lst, lenth):
         result = []
         for p in pos:
             result.append(lst[p[0]:p[1]+1])
-            
+
         return result
-    
+
 
 """
 Created on Sat Jul 9 23:41:46 2022
@@ -41,8 +42,9 @@ Created on Sat Jul 9 23:41:46 2022
 @author: Administrator
 """
 
+
 def try_run(func):
-    
+
     def real_run(*args, **keyargs):
         try:
             return func(*args, **keyargs)
@@ -51,6 +53,7 @@ def try_run(func):
                   (func.__name__, ' '.join(map(str, err.args))), colorama.Fore.RESET)
 
     return real_run
+
 
 def try_analyse(func):
 
@@ -64,7 +67,6 @@ def try_analyse(func):
             traceback.print_exc()
 
     return real_run
-    
 
 
 """
@@ -75,13 +77,15 @@ Created on 2019-02-03
 """
 # 新版压缩解压方法
 
+
 def dumps(data, level=3):
     return lzma.compress(pickle.dumps(data, pickle.HIGHEST_PROTOCOL), preset=level)
+
 
 def loads(data):
     # 判定是否为新格式
     check_bytes = b'\xfd7zXZ\x00\x00\x04\xe6\xd6\xb4F\x02\x00!'
-    if check_bytes==data[:15]: # 新格式
+    if check_bytes == data[:15]:  # 新格式
         result = pickle.loads(lzma.decompress(data))
     else:
         try:
@@ -96,10 +100,11 @@ def loads(data):
 输入字符串和一个整数，将输入字符串长度调整为整数指定的长度，用空格补全。
 如果字符串长度超过指定长度则截断，并在末尾加入...字符。
 """
+
+
 def adjust_string_length(string, length):
     if len(string) < length:
         string += ' ' * (length - len(string))
     elif len(string) > length:
         string = string[:length-3] + '...'
     return string
-

@@ -24,6 +24,8 @@ from sqlite3 import Error
 # from wttools.wtpickle import dumps, loads
 
 # 建立连接函数
+
+
 def ConnectionPool(path='/workdir/default.db'):
     '''
     仿照redis的操作，建立连接池的方法
@@ -37,6 +39,8 @@ def ConnectionPool(path='/workdir/default.db'):
         print((type(err), err.args))
 
 # 建立操作实例函数
+
+
 def StrictRedis(connection_pool):
     '''
     仿照redis的操作，建立数据库操作句柄
@@ -46,6 +50,7 @@ def StrictRedis(connection_pool):
         return LiteKv(connection_pool)
     except Error as err:
         print((type(err), err.args))
+
 
 class LiteKv():
     '''
@@ -63,29 +68,31 @@ class LiteKv():
     @property
     def __total_changes(self):
         return self.__connection.total_changes
-    
+
     # 公有属性
     @property
     def tables(self):
         return self.__tables
-    
+
     # 用于模拟连接池的断开操作
     class cp():
         connection_pool = None
+
         def __init__(self, connectionpool):
             self.connection_pool = connectionpool
+
         def disconnect(self):
-            if self.connection_pool.total_changes>0:
+            if self.connection_pool.total_changes > 0:
                 self.connection_pool.commit()
             self.connection_pool.close()
-    
+
     @property
     def connection_pool(self):
         return litekv.cp(self.__connection)
-        
 
     # 类方法
-    #def __init__(self, datafile='c:\\sqlite\\default.db'):
+    # def __init__(self, datafile='c:\\sqlite\\default.db'):
+
     def __init__(self, connection):
         '''
         connection:sqlite的连接
@@ -95,8 +102,8 @@ class LiteKv():
         self.__tables = self.__exist_tables()
         # 线程保护锁
         # self.__lock = threading.Lock()
-        
-        if len(self.__tables)==0:
+
+        if len(self.__tables) == 0:
             self.__prepare_tables()
         self.__tables = self.__exist_tables()
 
@@ -122,7 +129,7 @@ class LiteKv():
             # self.save() # 在这里我很纠结。。。会很大程度的降低效率
             # 但是如果中间不保存的话，可能导致缓存占用大量内存！
             # 因为启用了autocommit，理论上不需要这个语句了，但是出于保险还是进行了保留。
-            if self.__connection.total_changes>10:
+            if self.__connection.total_changes > 10:
                 self.save()
 
             '''
@@ -163,10 +170,10 @@ class LiteKv():
         list (name char(50) PRIMARY KEY NOT NULL,
         data blob);""", )
         list_res = self.__run(cmd)
-        
+
         cmd = ("CREATE UNIQUE INDEX IF NOT EXISTS listindex ON list(name);",)
         list_index_res = self.__run(cmd)
-        
+
         cmd = ("""CREATE TABLE
         IF NOT EXISTS
         hash (name char(50) not null,
@@ -174,7 +181,7 @@ class LiteKv():
         data blob, 
         primary key (name, key));""",)
         hash_res = self.__run(cmd)
-        
+
         cmd = ("""CREATE UNIQUE INDEX
         IF NOT EXISTS
         hashindex ON 
@@ -182,41 +189,41 @@ class LiteKv():
         name asc,
         key asc);""",)
         hash_index_res = self.__run(cmd)
-        
+
         self.save()
 
     def __exist_tables(self):
         cmd = ('select name from sqlite_master where type="table"',)
         return self.__run(cmd)
-    
+
     # 公有方法
     def save(self):
         self.__connection.commit()
-    
+
     def keys(self):
         '''
         返回所有的key值列表
         '''
         list_cmd = ("select distinct name from list;",)
         list_keys = [l[0] for l in self.__run(list_cmd)]
-        
+
         hash_cmd = ("select distinct name from hash;",)
         hash_keys = [h[0] for h in self.__run(hash_cmd)]
-        
+
         return "list_type:\n" + str(list_keys) + "\nhash_type:\n" + str(hash_keys)
-    
+
     # string类型方法
     def get(self, name):
         '''
         string类型读取
         '''
-        cmd = ("select data from list where name=?;",(name,))
+        cmd = ("select data from list where name=?;", (name,))
         res = self.__run(cmd)
-        if len(res)>0:
+        if len(res) > 0:
             return res[0][0]
         else:
             return res
-    
+
     def set(self, name, data):
         '''
         string类型保存
@@ -236,7 +243,7 @@ class LiteKv():
         # 先查看是否有记录
         result = False
         check = self.get(name)
-        if len(check)>0:
+        if len(check) > 0:
             # 更新
             cmd = ("""update list
             set data=?
@@ -260,7 +267,7 @@ class LiteKv():
                 result = res
 
         return result
-    
+
     # hash类型方法
     def hkeys(self, name):
         '''
@@ -269,8 +276,7 @@ class LiteKv():
         cmd = ("""select key from hash
         where name=?;""", (name,))
         return [l[0] for l in self.__run(cmd)]
-    
-    
+
     def hget(self, name, key):
         '''
         hash类型读取
@@ -280,11 +286,11 @@ class LiteKv():
         where name=?
         and key=?""", (name, key))
         res = self.__run(cmd)
-        if len(res)>0:
+        if len(res) > 0:
             return res[0][0]
         else:
             return res
-    
+
     def hset(self, name, key, data):
         '''
         hash类型单条写入
@@ -303,7 +309,7 @@ class LiteKv():
         '''
         # 先检查是否存在
         check = self.hget(name, key)
-        if len(check)>0:
+        if len(check) > 0:
             # 更新
             cmd = ("""update hash
             set data=?
@@ -328,7 +334,7 @@ class LiteKv():
                 result = res
 
         return result
-        
+
     def hmset(self, name, args):
         '''
         hash类型批量写入

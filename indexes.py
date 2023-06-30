@@ -12,13 +12,14 @@ from commontools import try_run, try_analyse, split_list
 
 NullDataFrame = pd.DataFrame()
 
+
 class Indexes(DataSets):
-    
+
     def __init__(self, data_store):
         super(Indexes, self).__init__(data_store)
         self._data = self.read_index()
         self._index = self._data.index.tolist()
-    
+
     @try_run
     def read_index(self):
         # implementation of read_index method
@@ -26,12 +27,12 @@ class Indexes(DataSets):
         if isinstance(result, pd.DataFrame):
             target = result
         elif isinstance(result, list):
-            target =  NullDataFrame
+            target = NullDataFrame
         else:
             print(result)
             target = NullDataFrame
         return target
-    
+
     @try_run
     def get_index(self):
         # implementation of get_index method
@@ -52,20 +53,20 @@ class Indexes(DataSets):
         market_list = ['CSI', 'CNI', 'SZSE', 'SSE', 'MSCI']
         for mark in market_list:
             result = self._data_source.api.index_basic(market=mark,
-                fields=["ts_code", "name", "market", "publisher", "category", "base_date",
-                    "base_point", "list_date", "fullname", "index_type", "weight_rule",
-                    "desc", "exp_date"]).set_index('ts_code', drop=True)
-            if len(result)>0 and isinstance(result, pd.DataFrame):
+                                                       fields=["ts_code", "name", "market", "publisher", "category", "base_date",
+                                                               "base_point", "list_date", "fullname", "index_type", "weight_rule",
+                                                               "desc", "exp_date"]).set_index('ts_code', drop=True)
+            if len(result) > 0 and isinstance(result, pd.DataFrame):
                 indexes.append(result)
-        if len(indexes)>1:
+        if len(indexes) > 1:
             target = pd.concat(indexes, axis=0)
         else:
             target = pd.DataFrame()
         self._data = target
         self._index = target.index.tolist()
         return target
-        #return self._query_data(key, args).set_index('ts_code', drop=True)
-    
+        # return self._query_data(key, args).set_index('ts_code', drop=True)
+
     def index_info(self):
         print('''
             名称	类型	描述
@@ -103,7 +104,8 @@ class Indexes(DataSets):
         获取本地指数列表
         '''
         result = self._data_store.hkeys('index')
-        result = list(map(lambda x : x.decode() if isinstance(x, bytes) else x, result))
+        result = list(
+            map(lambda x: x.decode() if isinstance(x, bytes) else x, result))
         return result
 
     @try_run
@@ -120,7 +122,7 @@ class Indexes(DataSets):
         else:
             print('数据读取错误！')
             result = NullDataFrame
-        
+
         return result
 
     @try_run
@@ -132,18 +134,19 @@ class Indexes(DataSets):
         data = self._get_data(code)
 
         return data
-    
+
     @try_run
     def _get_all_data(self, code):
         '''
         获得全部的完整除权数据
         '''
         # implementation of get_data method
-        result = []     
+        result = []
         for period in self._time_table:
-            fields=["ts_code", "trade_date", "open", "high", "low", "close", "pre_close",
-                    "change", "pct_chg", "vol", "amount"]
-            res = self._data_source.api.daily(ts_code=code, fields=fields, **period)
+            fields = ["ts_code", "trade_date", "open", "high", "low", "close", "pre_close",
+                      "change", "pct_chg", "vol", "amount"]
+            res = self._data_source.api.daily(
+                ts_code=code, fields=fields, **period)
             if len(res) > 0:
                 result.append(res)
 
@@ -152,12 +155,12 @@ class Indexes(DataSets):
         else:
             res = result[0]
 
-        if len(res)>0:
+        if len(res) > 0:
             res.trade_date = res.trade_date.map(pd.Timestamp)
             res = res.set_index('trade_date', drop=True).sort_index()
             res = res.drop('ts_code', axis=1)
 
-        return res    
+        return res
     '''
     # ---------------------------------------------------------
     # 测试使用
@@ -166,48 +169,49 @@ class Indexes(DataSets):
         return self._get_new_cq_data(code)
     # ---------------------------------------------------------
     '''
-    
+
     @try_run
     def _get_new_data(self, code):
         '''
         获得指定股票的最新除权数据
         可能缺少历史数据
         '''
-        fields=["ts_code", "trade_date", "open", "high", "low", "close", "pre_close",
-                "change", "pct_chg", "vol", "amount"]
+        fields = ["ts_code", "trade_date", "open", "high", "low", "close", "pre_close",
+                  "change", "pct_chg", "vol", "amount"]
         res = self._data_source.api.index_daily(ts_code=code, fields=fields)
-        if isinstance(res, pd.DataFrame) and len(res)>0:
+        if isinstance(res, pd.DataFrame) and len(res) > 0:
             res.trade_date = res.trade_date.map(pd.Timestamp)
             res = res.set_index('trade_date', drop=True).sort_index()
             res = res.drop('ts_code', axis=1)
-        
+
         return res
-    
+
     @try_run
     def _get_data(self, code):
         '''
         替代原来的方法，减少网络获取的次数，从而提高效率。
         '''
         local_data = self._data_store.hget('index', code)
-        if len(local_data)==0:
+        if len(local_data) == 0:
             result = self._get_all_data(code)
         else:
             new_data = self._get_new_data(code)
-            if len(new_data)>0:
+            if len(new_data) > 0:
                 if local_data.index.max() != new_data.index.max():
-                    result = pd.concat([local_data, new_data]).drop_duplicates().sort_index()
+                    result = pd.concat([local_data, new_data]
+                                       ).drop_duplicates().sort_index()
                 else:
                     result = local_data
             else:
                 result = new_data
 
         return result
-        
+
         '''这段代码的方法很神，保留一下
         tmp = new_cq.merge(local_cq, on=new_cq.columns.tolist() + ['trade_date',], how='left', indicator=True)
         tmp = tmp[tmp['_merge'] == 'left_only'].drop(columns='_merge')
         '''
-        
+
     @try_run
     def update_data(self, code):
         # implementation of update_data method
@@ -220,7 +224,7 @@ class Indexes(DataSets):
                 end = 0
             else:
                 end = self._data_store.hset('index', code, remote_data)
-        else :
+        else:
             end = 0
-            
+
         return end

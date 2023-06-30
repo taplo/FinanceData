@@ -13,14 +13,14 @@ from commontools import try_run, try_analyse, split_list
 
 NullDataFrame = pd.DataFrame()
 
+
 class Stocks(DataSets):
-    
+
     def __init__(self, data_store):
         super(Stocks, self).__init__(data_store)
         self._data = self.read_index()
         self._index = self._data.index.tolist()
-    
-        
+
     @try_run
     def _cq2qfq(self, data, adj_factor):
         '''
@@ -41,7 +41,6 @@ class Stocks(DataSets):
 
         return temp.drop(['adj', 'last_adj', 'factor'], axis=1)
 
-    
     @try_run
     def read_index(self):
         # implementation of read_index method
@@ -54,19 +53,19 @@ class Stocks(DataSets):
             print(result)
             target = NullDataFrame
         return target
-    
+
     @try_run
     def get_index(self):
         # implementation of get_index method
         result = self._data_source.api.stock_basic(exchange='', list_status='L',
-            fields='ts_code, symbol, name, area, industry, fullname, enname, market, exchange,\
+                                                   fields='ts_code, symbol, name, area, industry, fullname, enname, market, exchange,\
             curr_type, list_status, list_date, delist_date, is_hs').set_index(
             'ts_code', drop=True)
         self._data = result
         self._index = result.index.tolist()
         return result
-        #return self._query_data(key, args).set_index('ts_code', drop=True)
-    
+        # return self._query_data(key, args).set_index('ts_code', drop=True)
+
     @try_run
     def update_index(self):
         # implementation of update_index method
@@ -89,7 +88,7 @@ class Stocks(DataSets):
         # implementation of read_data method
         if len(code) != 9:
             code = self._check_code(code)
-            
+
         data = {}
         kinds = ['qfq', 'cq', 'adj', 'qual']
         for k in kinds:
@@ -98,7 +97,7 @@ class Stocks(DataSets):
                 data[k] = res
             elif isinstance(res, list):
                 data[k] = pd.DataFrame()
-        
+
         return data
 
     @try_run
@@ -116,15 +115,16 @@ class Stocks(DataSets):
         data['qual'] = self._get_qual_data(code)
         data['qfq'] = self._cq2qfq(data['cq'], data['adj'])
         return data
-    
+
     @try_run
     def _get_qual_data(self, code):
         local_qual = self._data_store.hget('qual', code)
-        if isinstance(local_qual, pd.DataFrame) and len(local_qual)>0:
+        if isinstance(local_qual, pd.DataFrame) and len(local_qual) > 0:
             new_qual = self._get_new_qual_data(code)
-            if len(new_qual)>0:
+            if len(new_qual) > 0:
                 if local_qual.index.max() != new_qual.index.max():
-                    result = pd.concat([local_qual, new_qual]).drop_duplicates().sort_index()
+                    result = pd.concat([local_qual, new_qual]
+                                       ).drop_duplicates().sort_index()
                 else:
                     result = local_qual
             else:
@@ -132,42 +132,43 @@ class Stocks(DataSets):
         else:
             result = self._get_all_qual_data(code)
 
-        
         return result
-        
-    
+
     @try_run
     def _get_all_qual_data(self, code):
-        fields=["ts_code", "trade_date", "close", "turnover_rate", "turnover_rate_f",
-            "volume_ratio", "pe", "pe_ttm", "pb", "ps", "ps_ttm", "dv_ratio", "dv_ttm",
-            "total_share", "float_share", "free_share", "total_mv", "circ_mv", "limit_status"]
+        fields = ["ts_code", "trade_date", "close", "turnover_rate", "turnover_rate_f",
+                  "volume_ratio", "pe", "pe_ttm", "pb", "ps", "ps_ttm", "dv_ratio", "dv_ttm",
+                  "total_share", "float_share", "free_share", "total_mv", "circ_mv", "limit_status"]
         result = []
         for period in self._time_table:
-            res = self._data_source.api.daily_basic(ts_code = code, **period, fields = fields)
-            if len(res)>0:
+            res = self._data_source.api.daily_basic(
+                ts_code=code, **period, fields=fields)
+            if len(res) > 0:
                 res.trade_date = res.trade_date.apply(pd.Timestamp)
-                res = res.set_index('trade_date', drop=True).drop('ts_code', axis=1).sort_index()
+                res = res.set_index('trade_date', drop=True).drop(
+                    'ts_code', axis=1).sort_index()
                 result.append(res)
-        
-        if len(result)>1:
+
+        if len(result) > 1:
             result = pd.concat(result)
         else:
-            result = result[0]        
+            result = result[0]
         return result
-    
+
     @try_run
     def _get_new_qual_data(self, code):
-        fields=["ts_code", "trade_date", "close", "turnover_rate", "turnover_rate_f",
-            "volume_ratio", "pe", "pe_ttm", "pb", "ps", "ps_ttm", "dv_ratio", "dv_ttm",
-            "total_share", "float_share", "free_share", "total_mv", "circ_mv", "limit_status"]
-        res = self._data_source.api.daily_basic(ts_code = code, fields = fields)
-        if len(res)>0:
+        fields = ["ts_code", "trade_date", "close", "turnover_rate", "turnover_rate_f",
+                  "volume_ratio", "pe", "pe_ttm", "pb", "ps", "ps_ttm", "dv_ratio", "dv_ttm",
+                  "total_share", "float_share", "free_share", "total_mv", "circ_mv", "limit_status"]
+        res = self._data_source.api.daily_basic(ts_code=code, fields=fields)
+        if len(res) > 0:
             res.trade_date = res.trade_date.apply(pd.Timestamp)
-            result = res.set_index('trade_date', drop=True).drop('ts_code', axis=1).sort_index()
+            result = res.set_index('trade_date', drop=True).drop(
+                'ts_code', axis=1).sort_index()
         else:
             result = res
         return result
-    
+
     @property
     def qual_info(self):
         '''
@@ -197,38 +198,38 @@ class Stocks(DataSets):
                 circ_mv	float	流通市值（万元）
                 limit_status	int	涨跌停状态
               """)
-    
+
     @try_run
     def _get_all_cq_data(self, code):
         '''
         获得全部的完整除权数据
         '''
         # implementation of get_data method
-        result = []     
+        result = []
         for period in self._time_table:
             res = self._data_source.api.daily(ts_code=code, **period)
             if len(res) > 0:
                 result.append(res)
-            
+
         if len(result) > 1:
             res = pd.concat(result, axis=0).drop_duplicates()
         else:
             res = result[0]
 
-        if len(res)>0:
+        if len(res) > 0:
             res.trade_date = res.trade_date.map(pd.Timestamp)
             res = res.set_index('trade_date', drop=True).sort_index()
             res = res.drop('ts_code', axis=1)
-            
+
         return res
-    
+
     # ---------------------------------------------------------
     # 测试使用
     @try_run
     def get_new_cq_data(self, code):
         return self._get_new_cq_data(code)
     # ---------------------------------------------------------
-    
+
     @try_run
     def _get_new_cq_data(self, code):
         '''
@@ -236,39 +237,39 @@ class Stocks(DataSets):
         可能缺少历史数据
         '''
         res = self._data_source.api.daily(ts_code=code)
-        if len(res)>0:
+        if len(res) > 0:
             res.trade_date = res.trade_date.map(pd.Timestamp)
             res = res.set_index('trade_date', drop=True).sort_index()
             res = res.drop('ts_code', axis=1)
 
         return res
-    
+
     @try_run
     def _get_cq_data(self, code):
         '''
         替代原来的方法，减少网络获取的次数，从而提高效率。
         '''
         local_cq = self._data_store.hget('cq', code)
-        if len(local_cq)==0:
+        if len(local_cq) == 0:
             result = self._get_all_cq_data(code)
         else:
             new_cq = self._get_new_cq_data(code)
-            if len(new_cq)>0:
+            if len(new_cq) > 0:
                 if local_cq.index.max() != new_cq.index.max():
-                    result = pd.concat([local_cq, new_cq]).drop_duplicates().sort_index()
+                    result = pd.concat([local_cq, new_cq]
+                                       ).drop_duplicates().sort_index()
                 else:
                     result = local_cq
             else:
                 result = new_cq
-        
+
         return result
-        
+
         '''这段代码的方法很神，保留一下
         tmp = new_cq.merge(local_cq, on=new_cq.columns.tolist() + ['trade_date',], how='left', indicator=True)
         tmp = tmp[tmp['_merge'] == 'left_only'].drop(columns='_merge')
         '''
-    
-    
+
     @try_run
     def _get_all_adj_data(self, code):
         '''
@@ -285,37 +286,37 @@ class Stocks(DataSets):
         else:
             target = result[0]
 
-        if len(target)>0:
+        if len(target) > 0:
             target.trade_date = target.trade_date.map(pd.Timestamp)
             target = target.set_index('trade_date', drop=True).sort_index()
             target = target.drop('ts_code', axis=1)
-        
+
         return target
-    
+
     @try_run
     def _get_new_adj_data(self, code):
         '''
         获得新的复权系数数据
         '''
-        target= self._data_source.api.adj_factor(ts_code=code)
-        if len(target)>0:
+        target = self._data_source.api.adj_factor(ts_code=code)
+        if len(target) > 0:
             target.trade_date = target.trade_date.map(pd.Timestamp)
             target = target.set_index('trade_date', drop=True).sort_index()
             target = target.drop('ts_code', axis=1)
-        
+
         return target
-    
+
     @try_run
     def _get_adj_data(self, code):
         '''
         替代原来的方法，减少网络获取的次数，从而提高效率。
         '''
         local_adj = self._data_store.hget('adj', code)
-        if len(local_adj)==0: # 本地无数据
+        if len(local_adj) == 0:  # 本地无数据
             result = self._get_all_adj_data(code)
-        else: # 本地有数据
+        else:  # 本地有数据
             new_adj = self._get_new_adj_data(code)
-            if len(new_adj)>0:
+            if len(new_adj) > 0:
                 if local_adj.index.max() != new_adj.index.max():
                     result = pd.concat([local_adj, new_adj])
                     result['time'] = result.index
@@ -324,9 +325,9 @@ class Stocks(DataSets):
                     result = local_adj
             else:
                 result = new_adj
-            
+
         return result
-        
+
     @try_run
     def update_data(self, code):
         # implementation of update_data method
@@ -338,7 +339,8 @@ class Stocks(DataSets):
             if remote_data[key].fillna('').equals(local_data[key].fillna('')):
                 end = [0, 0, 0, 0]
             else:
-                result[key] = self._data_store.hset(key, code, remote_data[key])
+                result[key] = self._data_store.hset(
+                    key, code, remote_data[key])
                 end = list(result.values())
 
         return end

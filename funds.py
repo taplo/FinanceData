@@ -12,8 +12,9 @@ from commontools import try_run, try_analyse, split_list
 
 NullDataFrame = pd.DataFrame()
 
+
 class Funds(DataSets):
-    
+
     def __init__(self, data_store):
         super(Funds, self).__init__(data_store)
         self._data = self.read_index()
@@ -21,7 +22,7 @@ class Funds(DataSets):
             self._index = self._data.index.tolist()
         else:
             self._index = []
-    
+
     @try_run
     def read_index(self):
         # implementation of read_index method
@@ -31,21 +32,21 @@ class Funds(DataSets):
         else:
             target = result
         return target
-    
+
     @try_run
     def get_index(self):
         # implementation of get_index method
         # 条件：1、场内基金；2、所有状态
         res = self._data_source.api.fund_basic(market="E", status='L')
         result = res.set_index('ts_code', drop=True).sort_values('list_date')
-        if len(result)>0 and isinstance(result, pd.DataFrame):
+        if len(result) > 0 and isinstance(result, pd.DataFrame):
             self._data = result
             self._index = self._data.index.tolist()
         else:
             self._data = NullDataFrame
             self._index = []
         return result
-    
+
     def fund_info(self):
 
         info = """
@@ -79,7 +80,7 @@ class Funds(DataSets):
             market	str	Y	E场内O场外
             """
         print(info)
-    
+
     @try_run
     def update_index(self):
         # implementation of update_index method
@@ -89,10 +90,10 @@ class Funds(DataSets):
         if isinstance(local_data, pd.DataFrame):
             if remote_data.fillna('').equals(local_data.fillna('')):
                 result = 0
-        
+
         if result > 0:
             result = self._data_store.hset('list', 'fund', remote_data)
-        
+
         return result
 
     @try_run
@@ -101,7 +102,8 @@ class Funds(DataSets):
         获取本地指数列表
         '''
         result = self._data_store.hkeys('fund')
-        result = list(map(lambda x : x.decode() if isinstance(x, bytes) else x, result))
+        result = list(
+            map(lambda x: x.decode() if isinstance(x, bytes) else x, result))
         return result
 
     @try_run
@@ -132,9 +134,10 @@ class Funds(DataSets):
     @try_run
     def _get_new_data(self, code):
         data = self._data_source.api.fund_daily(ts_code=code)
-        if len(data)>0:
+        if len(data) > 0:
             data.trade_date = data.trade_date.map(pd.Timestamp)
-            data = data.set_index('trade_date', drop=True).drop('ts_code', axis=1).sort_index()
+            data = data.set_index('trade_date', drop=True).drop(
+                'ts_code', axis=1).sort_index()
         return data
 
     @try_run
@@ -142,13 +145,14 @@ class Funds(DataSets):
         res = []
         for period in self._time_table:
             data = self._data_source.api.fund_daily(ts_code=code, **period)
-            if len(data)>0:
+            if len(data) > 0:
                 data.trade_date = data.trade_date.map(pd.Timestamp)
-                data = data.set_index('trade_date', drop=True).drop('ts_code', axis=1).sort_index()
+                data = data.set_index('trade_date', drop=True).drop(
+                    'ts_code', axis=1).sort_index()
                 res.append(data)
         if len(res) > 1:
             result = pd.concat(res)
-        elif len(res)==1:
+        elif len(res) == 1:
             result = res[0]
         else:
             result = data
@@ -157,11 +161,12 @@ class Funds(DataSets):
     @try_run
     def _get_data(self, code):
         local_data = self._read_data(code)
-        if isinstance(local_data, pd.DataFrame) and len(local_data)>0:
+        if isinstance(local_data, pd.DataFrame) and len(local_data) > 0:
             new_data = self._get_new_data(code)
-            if len(new_data)>0:
+            if len(new_data) > 0:
                 if local_data.index.max() != new_data.index.max():
-                    result = pd.concat([local_data, new_data]).drop_duplicates().sort_index()
+                    result = pd.concat([local_data, new_data]
+                                       ).drop_duplicates().sort_index()
                 else:
                     result = local_data
             else:
@@ -174,9 +179,10 @@ class Funds(DataSets):
     @try_run
     def _get_new_adj(self, code):
         adj = self._data_source.api.fund_adj(ts_code=code)
-        if len(adj)>0:
+        if len(adj) > 0:
             adj.trade_date = adj.trade_date.map(pd.Timestamp)
-            adj = adj.set_index('trade_date', drop=True).drop('ts_code', axis=1).sort_index()
+            adj = adj.set_index('trade_date', drop=True).drop(
+                'ts_code', axis=1).sort_index()
         return adj
 
     @try_run
@@ -184,13 +190,14 @@ class Funds(DataSets):
         res = []
         for period in self._time_table:
             data = self._data_source.api.fund_adj(ts_code=code, **period)
-            if len(data)>0:
+            if len(data) > 0:
                 data.trade_date = data.trade_date.map(pd.Timestamp)
-                data = data.set_index('trade_date', drop=True).drop('ts_code', axis=1).sort_index()
+                data = data.set_index('trade_date', drop=True).drop(
+                    'ts_code', axis=1).sort_index()
                 res.append(data)
         if len(res) > 1:
             result = pd.concat(res)
-        elif len(res)==1:
+        elif len(res) == 1:
             result = res[0]
         else:
             result = data
@@ -199,11 +206,12 @@ class Funds(DataSets):
     @try_run
     def _get_adj(self, code):
         local_data = self._read_adj(code)
-        if isinstance(local_data, pd.DataFrame) and len(local_data)>0:
+        if isinstance(local_data, pd.DataFrame) and len(local_data) > 0:
             new_data = self._get_new_adj(code)
-            if len(new_data)>0:
+            if len(new_data) > 0:
                 if local_data.index.max() != new_data.index.max():
-                    result = pd.concat([local_data, new_data]).drop_duplicates().sort_index()
+                    result = pd.concat([local_data, new_data]
+                                       ).drop_duplicates().sort_index()
                 else:
                     result = local_data
             else:
@@ -220,7 +228,6 @@ class Funds(DataSets):
         result['adj'] = self._get_adj(code)
         return result
 
-        
     @try_run
     def update_data(self, code):
         # implementation of update_data method
@@ -232,7 +239,8 @@ class Funds(DataSets):
             if remote_data[key].fillna('').equals(local_data[key].fillna('')):
                 end = [0, 0]
             else:
-                result[key] = self._data_store.hset(key, code, remote_data[key])
+                result[key] = self._data_store.hset(
+                    key, code, remote_data[key])
                 end = list(result.values())
 
         return end

@@ -12,27 +12,28 @@ from datasource import DataSource
 from trade_calendar import TradeCalendar
 from commontools import loads, dumps, try_run
 
+
 class DataSets:
     '''
     financedata包中的各个交易种类封装的基类
     此类包含各个交易种类都包含的data_source、data_store、index、data属性，
     定义了read_index、get_index、save_index、update_index、read_data、get_data、save_data、update_data等必须实现的接口。
     '''
-    
+
     _index = None
     _data = None
     _calendar = None
-    
+
     _data_source = None
     _data_store = None
-    
+
     # 因为tushare系统对于股票数据下载有长度限制，目前限制一次6000条，因此将交易日历按照6000进行时间分段，
     # 便于从网站分段下载完整数据
     _time_table = [
-        {'start_date':'19901219', 'end_date':'20070523'},
-        {'start_date':'20070524'}
-        ]
-    
+        {'start_date': '19901219', 'end_date': '20070523'},
+        {'start_date': '20070524'}
+    ]
+
     def __init__(self, data_store):
         '''
         data_source:有效的DataSource类的对象
@@ -42,41 +43,40 @@ class DataSets:
         self._data_source = DataSource()
         self._data_store = data_store
         self._calendar = TradeCalendar(data_store)
-        
+
     @property
     def index(self):
         return self._index
-    
+
     @property
     def data(self):
         return self._data
-    
-    
+
     @abc.abstractmethod
     def read_index(self):
         # implementation
         pass
-    
+
     @abc.abstractmethod
     def get_index(self):
         # implementation
         pass
-    
+
     @abc.abstractmethod
     def update_index(self):
         # implementation
         pass
-    
+
     @abc.abstractmethod
     def read_data(self):
         # implementation
         pass
-    
+
     @abc.abstractmethod
     def get_data(self):
         # implementation
         pass
-    
+
     @abc.abstractmethod
     def update_data(self):
         # implementation
@@ -120,27 +120,27 @@ class DataSets:
         r = self.__data_store.get_cursor()
         return r.hkeys(name)
     """
-    
+
     @try_run
     def _check_code(self, code):
         '''
         如果提交的code为非标准ts_code格式，则补全
         '''
         market_table = {
-            '0':'SZ',
-            '3':'SZ',
-            '4':'BJ',
-            '6':'SH',
-            '8':'BJ',
+            '0': 'SZ',
+            '3': 'SZ',
+            '4': 'BJ',
+            '6': 'SH',
+            '8': 'BJ',
         }
         char = code[0]
         if char in market_table.keys():
             code = code + '.' + market_table[char]
         else:
             raise code + "代码错误！"
-        
+
         return code
-    
+
     # 通用方法
     def _transe_date2tu(self, d):
         '''输入Timestamp，输出TuShare需要的时间格式'''

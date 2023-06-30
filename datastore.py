@@ -10,7 +10,6 @@ import sqlite2kv as sql
 from commontools import loads, dumps, try_run
 
 
-
 class DataStore():
     '''
     创建数据持久化的存储类，根据输入选择是建立redis连接池还是基于sqlite2kv监理的sqlite3连接池。
@@ -19,8 +18,7 @@ class DataStore():
     __pool = None
     __StrictRedis = None
     __r = None
-    
-    
+
     def __init__(self, db_type, **kwargs):
         '''
         :param db_type: 数据库类型，可选'redis'或'sqlite3'
@@ -32,16 +30,16 @@ class DataStore():
                 params['host'] = kwargs['host']
             else:
                 params['host'] = '127.0.0.1'
-                
+
             if 'port' in kwargs.keys():
                 params['port'] = kwargs['port']
 
             if 'password' in kwargs.keys():
                 params['password'] = kwargs['password']
-                
+
             if 'db' in kwargs.keys():
                 params['db'] = kwargs['db']
-                            
+
             self.__pool = redisDB.ConnectionPool(**params)
             self.__StrictRedis = redisDB.StrictRedis
             self.__r = self.redis
@@ -73,13 +71,13 @@ class DataStore():
             result = loads(res)
         else:
             result = res
-            
-        return result        
-    
+
+        return result
+
     @try_run
     def set(self, name, data):
         return self.__r.set(name, dumps(data))
-    
+
     @try_run
     def hget(self, name, key):
         res = self.__r.hget(name, key)
@@ -87,13 +85,13 @@ class DataStore():
             result = loads(res)
         else:
             result = res
-            
+
         return result
-    
+
     @try_run
     def hset(self, name, key, data):
         return self.__r.hset(name, key, dumps(data))
-    
+
     @try_run
     def hkeys(self, name):
         return self.__r.hkeys(name)
