@@ -59,10 +59,7 @@ class FinanceData:
     '''
     创建一个管理调度类，
     '''
-
-    _data_source = None
     _data_stroe = None
-    _calendar = None
 
     # 金融对象字典
     _finance_dict = {
@@ -77,11 +74,9 @@ class FinanceData:
         :param db_type: 数据库类型，可选'redis'或'sqlite3'
         :param kwargs: 数据库连接参数，redis需要host和port以及密码（如果有的话），sqlite3需要db_path
         '''
-        self._data_source = DataSource()
         self._data_stroe = DataStore(db_type=db_type, **kwargs)
-        self._calendar = TradeCalendar(self._data_stroe)
 
-        #self.stocks = self._finance_dict["stocks"](self._data_stroe)
+        # self.stocks = self._finance_dict["stocks"](self._data_stroe)
         for key in self._finance_dict.keys():
             cmd = "self." + key + " = " + \
                 "self._finance_dict['" + key + "'](self._data_stroe)"
