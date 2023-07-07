@@ -57,6 +57,7 @@ class Stocks(DataSets):
     @try_run
     def get_index(self):
         # implementation of get_index method
+        self._data_source.check_times()
         result = self._data_source.api.stock_basic(exchange='', list_status='L',
                                                    fields='ts_code, symbol, name, area, industry, fullname, enname, market, exchange,\
             curr_type, list_status, list_date, delist_date, is_hs').set_index(
@@ -141,6 +142,7 @@ class Stocks(DataSets):
                   "total_share", "float_share", "free_share", "total_mv", "circ_mv", "limit_status"]
         result = []
         for period in self._time_table:
+            self._data_source.check_times()
             res = self._data_source.api.daily_basic(
                 ts_code=code, **period, fields=fields)
             if len(res) > 0:
@@ -160,6 +162,7 @@ class Stocks(DataSets):
         fields = ["ts_code", "trade_date", "close", "turnover_rate", "turnover_rate_f",
                   "volume_ratio", "pe", "pe_ttm", "pb", "ps", "ps_ttm", "dv_ratio", "dv_ttm",
                   "total_share", "float_share", "free_share", "total_mv", "circ_mv", "limit_status"]
+        self._data_source.check_times()
         res = self._data_source.api.daily_basic(ts_code=code, fields=fields)
         if len(res) > 0:
             res.trade_date = res.trade_date.apply(pd.Timestamp)
@@ -207,6 +210,7 @@ class Stocks(DataSets):
         # implementation of get_data method
         result = []
         for period in self._time_table:
+            self._data_source.check_times()
             res = self._data_source.api.daily(ts_code=code, **period)
             if len(res) > 0:
                 if type(res) == pd.DataFrame:
@@ -240,6 +244,7 @@ class Stocks(DataSets):
         获得指定股票的最新除权数据
         可能缺少历史数据
         '''
+        self._data_source.check_times()
         res = self._data_source.api.daily(ts_code=code)
         if len(res) > 0:
             res.trade_date = res.trade_date.map(pd.Timestamp)
@@ -281,6 +286,7 @@ class Stocks(DataSets):
         '''
         result = []
         for period in self._time_table:
+            self._data_source.check_times()
             res = self._data_source.api.adj_factor(ts_code=code, **period)
             if len(res) > 0:
                 result.append(res)
@@ -302,6 +308,7 @@ class Stocks(DataSets):
         '''
         获得新的复权系数数据
         '''
+        self._data_source.check_times()
         target = self._data_source.api.adj_factor(ts_code=code)
         if len(target) > 0:
             target.trade_date = target.trade_date.map(pd.Timestamp)
