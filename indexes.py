@@ -145,7 +145,7 @@ class Indexes(DataSets):
         for period in self._time_table:
             fields = ["ts_code", "trade_date", "open", "high", "low", "close", "pre_close",
                       "change", "pct_chg", "vol", "amount"]
-            res = self._data_source.api.daily(
+            res = self._data_source.api.index_daily(
                 ts_code=code, fields=fields, **period)
             if len(res) > 0:
                 result.append(res)
