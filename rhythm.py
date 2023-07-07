@@ -98,7 +98,7 @@ class Rhythm():
         period：计次周期（单位：秒）'''
         self.__q = Queue(1)
         self.__sleep = 1.02 * period / times
-        self.__thread = self.auto_counter(self.__sleep, self.__q)
+        # self.__thread = self.auto_counter(self.__sleep, self.__q)
 
     class auto_counter(Thread):
         '''自动出栈的线程类'''
@@ -124,6 +124,7 @@ class Rhythm():
                 
     def start(self):
         '''启动节奏控制'''
+        self.__thread = self.auto_counter(self.__sleep, self.__q)
         self.__thread.start()
         # print 'every times will pause %s'%str(self.__sleep)
 
