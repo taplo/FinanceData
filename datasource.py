@@ -42,11 +42,6 @@ class DataSource:
             cls.__rhythm.start()
         return cls.__instance
     
-    def __del__(cls):
-            if self.__class__.__rhythm is not None:
-                self.__class__.__rhythm.stop()
-                del self.__class__.__rhythm
-
     @property
     def api(self):
         '''

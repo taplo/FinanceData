@@ -109,6 +109,7 @@ class Rhythm():
             Thread.__init__(self)
             self.__delay = delay
             self.__que = que
+            self.daemon = True
 
         def run(self):
             '''
@@ -121,22 +122,6 @@ class Rhythm():
             if self.is_alive():
                 self.__que.put(False)
                 
-        def __del__(self):
-            self.stop()
-            sleep(2 * self.__delay)
-
-    def __del__(self):
-        try:
-            if self.__thread is None:
-                pass
-            elif self.__thread.is_alive():
-                self.__thread.stop()
-                del self.__thread
-            else:
-                del self.__thread
-        except Exception as err:
-            print(err.args)
-
     def start(self):
         '''启动节奏控制'''
         self.__thread.start()
