@@ -209,11 +209,15 @@ class Stocks(DataSets):
         for period in self._time_table:
             res = self._data_source.api.daily(ts_code=code, **period)
             if len(res) > 0:
-                result.append(res)
+                if type(res) == pd.DataFrame:
+                    result.append(res)
+                else:
+                    # 可能收到超频次错误
+                    print(res)
 
         if len(result) > 1:
             res = pd.concat(result, axis=0).drop_duplicates()
-        else:
+        elif len(result)==1:
             res = result[0]
 
         if len(res) > 0:

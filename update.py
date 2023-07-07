@@ -3,7 +3,7 @@
 finance data 模块中的数据更新程序
 """
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from progressbar import Percentage, SimpleProgress, Bar, ETA, progressbar
+from progressbar import Percentage, SimpleProgress, Bar, ETA, progressbar, ProgressBar
 
 
 class UpdateData:

@@ -146,10 +146,14 @@ class Funds(DataSets):
         for period in self._time_table:
             data = self._data_source.api.fund_daily(ts_code=code, **period)
             if len(data) > 0:
-                data.trade_date = data.trade_date.map(pd.Timestamp)
-                data = data.set_index('trade_date', drop=True).drop(
-                    'ts_code', axis=1).sort_index()
-                res.append(data)
+                if type(data) == pd.DataFrame:
+                    data.trade_date = data.trade_date.map(pd.Timestamp)
+                    data = data.set_index('trade_date', drop=True).drop(
+                        'ts_code', axis=1).sort_index()
+                    res.append(data)
+                else:
+                    # 可能收到超频次错误
+                    print(data)
         if len(res) > 1:
             result = pd.concat(res)
         elif len(res) == 1:
