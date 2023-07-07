@@ -116,19 +116,26 @@ class Rhythm():
             '''
             while self.__que.get():
                 sleep(self.__delay)
+        
+        def stop(self):
+            if self.is_alive():
+                self.__que.put(False)
+                
+        def __del__(self):
+            self.stop()
+            sleep(2 * self.__delay)
 
     def __del__(self):
         try:
             if self.__thread is None:
-                exit()
-            if self.__thread.is_alive():
-                self.__q.put(False)
-                sleep(2*self.__sleep)
+                pass
+            elif self.__thread.is_alive():
+                self.__thread.stop()
                 del self.__thread
             else:
                 del self.__thread
-        except:
-            pass
+        except Exception as err:
+            print(err.args)
 
     def start(self):
         '''启动节奏控制'''
@@ -147,8 +154,7 @@ class Rhythm():
     def stop(self):
         '''软终止独立进程的方法'''
         if self.__thread.is_alive():
-            self.__q.put(False, timeout=1)
-            self.__thread.join()
+            self.__thread.stop()
             del self.__thread
         else:
             del self.__thread
