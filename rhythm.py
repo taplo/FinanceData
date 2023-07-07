@@ -140,6 +140,11 @@ class Rhythm():
     def stop(self):
         '''软终止独立进程的方法'''
         if self.__thread.is_alive():
+            while not self.__q.empty():  # Clear the queue
+                try:
+                    self.__q.get_nowait()
+                except queue.Empty:
+                    pass
             self.__thread.stop()
             del self.__thread
         else:
