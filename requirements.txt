@@ -1,0 +1,14 @@
+tushare==1.2.89
+aligo==6.0.1
+APScheduler==3.10.1
+cloudpickle==2.2.1
+colorama==0.4.6
+Pillow==9.5.0
+prettytable==3.7.0
+progressbar2==4.2.0
+pytz-deprecation-shim==0.1.0.post0
+ratelimit==2.2.1
+redis==4.5.4
+simplejson==3.19.1
+websocket-client==0.57.0
+wheel==0.40.0
