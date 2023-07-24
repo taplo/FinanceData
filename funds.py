@@ -133,7 +133,6 @@ class Funds(DataSets):
 
     @try_run
     def _get_new_data(self, code):
-        self._data_source.check_times()
         data = self._data_source.api.fund_daily(ts_code=code)
         if len(data) > 0:
             data.trade_date = data.trade_date.map(pd.Timestamp)
@@ -145,7 +144,6 @@ class Funds(DataSets):
     def _get_all_data(self, code):
         res = []
         for period in self._time_table:
-            self._data_source.check_times()
             data = self._data_source.api.fund_daily(ts_code=code, **period)
             if len(data) > 0:
                 if type(data) == pd.DataFrame:
@@ -184,7 +182,6 @@ class Funds(DataSets):
 
     @try_run
     def _get_new_adj(self, code):
-        self._data_source.check_times()
         adj = self._data_source.api.fund_adj(ts_code=code)
         if len(adj) > 0:
             adj.trade_date = adj.trade_date.map(pd.Timestamp)
@@ -196,7 +193,6 @@ class Funds(DataSets):
     def _get_all_adj(self, code):
         res = []
         for period in self._time_table:
-            self._data_source.check_times()
             data = self._data_source.api.fund_adj(ts_code=code, **period)
             if len(data) > 0:
                 data.trade_date = data.trade_date.map(pd.Timestamp)

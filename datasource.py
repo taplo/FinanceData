@@ -7,8 +7,7 @@ financedata包中的数据源类，目前基于tushare编写
 import tushare
 import configparser
 
-from rhythm import Rhythm
-
+from ratelimit import limits, sleep_and_retry
 
 '''
 if tushare.get_token() is None:
@@ -27,7 +26,6 @@ class DataSource:
     tushare = tushare
     __ts_api = None
     __token = None
-    __rhythm = None
 
     def __new__(cls):
         if cls.__instance is None:
@@ -38,19 +36,14 @@ class DataSource:
             cls.__token = conf.get('anapro', 'tushare')
 
             cls.__instance.__ts_api = tushare.pro_api(cls.__token)
-            cls.__rhythm = Rhythm(475, 60)
-            cls.__rhythm.start()
         return cls.__instance
     
     @property
+    @sleep_and_retry
+    @limits(calls=500, period=60) # 每分钟访问不超过500次
     def api(self):
         '''
         操作句柄
+        更改为新的访问频率控制方法，经测试可以使用这种方法。
         '''
         return self.__ts_api
-
-    def check_times(self):
-        '''
-        控制请求频度，在网络操作前调用。
-        '''
-        self.__rhythm.checker()

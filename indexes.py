@@ -52,7 +52,6 @@ class Indexes(DataSets):
         # market_list = ['SSE', 'CSI', 'SZSE', 'CNI']
         market_list = ['CSI', 'CNI', 'SZSE', 'SSE', 'MSCI']
         for mark in market_list:
-            self._data_source.check_times()
             result = self._data_source.api.index_basic(market=mark,
                                                        fields=["ts_code", "name", "market", "publisher", "category", "base_date",
                                                                "base_point", "list_date", "fullname", "index_type", "weight_rule",
@@ -146,7 +145,6 @@ class Indexes(DataSets):
         for period in self._time_table:
             fields = ["ts_code", "trade_date", "open", "high", "low", "close", "pre_close",
                       "change", "pct_chg", "vol", "amount"]
-            self._data_source.check_times()
             res = self._data_source.api.index_daily(
                 ts_code=code, fields=fields, **period)
             if len(res) > 0:
@@ -184,7 +182,6 @@ class Indexes(DataSets):
         '''
         fields = ["ts_code", "trade_date", "open", "high", "low", "close", "pre_close",
                   "change", "pct_chg", "vol", "amount"]
-        self._data_source.check_times()
         res = self._data_source.api.index_daily(ts_code=code, fields=fields)
         if isinstance(res, pd.DataFrame) and len(res) > 0:
             res.trade_date = res.trade_date.map(pd.Timestamp)
