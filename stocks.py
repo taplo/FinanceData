@@ -72,11 +72,14 @@ class Stocks(DataSets):
         remote_data = self.get_index()
         local_data = self.read_index()
         result = 0
-        if isinstance(remote_data, pd.DataFrame) and isinstance(local_data, pd.DataFrame):
-            if not remote_data.fillna('').equals(local_data.fillna('')):
+        if isinstance(remote_data, pd.DataFrame):
+            if isinstance(local_data, pd.DataFrame):
+                if not remote_data.fillna('').equals(local_data.fillna('')):
+                    result = self._data_store.hset('list', 'stock', remote_data)
+                else:
+                    pass
+            else:
                 result = self._data_store.hset('list', 'stock', remote_data)
-        elif isinstance(remote_data, pd.DataFrame):
-            result = self._data_store.hset('list', 'stock', remote_data)
         return result
 
     @try_run

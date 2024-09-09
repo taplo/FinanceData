@@ -91,11 +91,14 @@ class Indexes(DataSets):
         remote_data = self.get_index()
         local_data = self.read_index()
         result = 0
-        if isinstance(remote_data, pd.DataFrame) and isinstance(local_data, pd.DataFrame):
-            if not remote_data.fillna('').equals(local_data.fillna('')):
+        if isinstance(remote_data, pd.DataFrame):
+            if isinstance(local_data, pd.DataFrame):
+                if not remote_data.fillna('').equals(local_data.fillna('')):
+                    result = self._data_store.hset('list', 'index', remote_data)
+                else:
+                    pass
+            else:
                 result = self._data_store.hset('list', 'index', remote_data)
-        elif isinstance(remote_data, pd.DataFrame):
-            result = self._data_store.hset('list', 'index', remote_data)
         return result
 
     @try_run
@@ -223,9 +226,12 @@ class Indexes(DataSets):
         end = 0
         local_data = self.read_data(code)
         remote_data = self.get_data(code)
-        if isinstance(local_data, pd.DataFrame) and isinstance(remote_data, pd.DataFrame):
-            if remote_data.fillna('').equals(local_data.fillna('')):
-                end = 0
+        if isinstance(remote_data, pd.DataFrame):
+            if isinstance(local_data, pd.DataFrame):
+                if remote_data.fillna('').equals(local_data.fillna('')):
+                    end = 0
+                else:
+                    end = self._data_store.hset('index', code, remote_data)
             else:
                 end = self._data_store.hset('index', code, remote_data)
         else:

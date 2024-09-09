@@ -61,6 +61,8 @@ class FinanceData:
     '''
     _data_stroe = None
 
+    _data_source = source
+
     # 金融对象字典
     _finance_dict = {
         'stocks': Stocks,

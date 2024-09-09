@@ -22,6 +22,10 @@ class UpdateData:
         '''
         单进程简单数据更新
         '''
+        # 更新金融数据类的索引数据
+        self._data_set.update_index()
+
+        # 更新金融数据类的数据
         lst = self._data_set.index
         result = {}
         pbar = ProgressBar(widgets=[Percentage(), ' ', Bar(
@@ -35,6 +39,10 @@ class UpdateData:
         '''
         多进程数据更新
         '''
+        # 更新金融数据类的索引数据
+        self._data_set.update_index()
+
+        # 更新金融数据类的数据
         with ThreadPoolExecutor(max_workers=threads) as pool:
             task_list = []
             lst = self._data_set.index
