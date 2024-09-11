@@ -236,15 +236,17 @@ class Funds(DataSets):
     def update_data(self, code):
         # implementation of update_data method
         result = {}
-        end = 0
         local_data = self.read_data(code)
         remote_data = self.get_data(code)
         for key in remote_data.keys():
-            if remote_data[key].fillna('').equals(local_data[key].fillna('')):
-                end = [0, 0]
-            else:
-                result[key] = self._data_store.hset(
-                    key, code, remote_data[key])
-                end = list(result.values())
+            if isinstance(remote_data[key], pd.DataFrame):
+                if not isinstance(local_data[key], pd.DataFrame):
+                    result[key] = self._data_store.hset(
+                        key, code, remote_data[key])
+                elif not remote_data[key].fillna('').equals(local_data[key].fillna('')):
+                    result[key] = self._data_store.hset(
+                        key, code, remote_data[key])
+                else:
+                    result[key] = 0
 
-        return end
+        return list(result.values())

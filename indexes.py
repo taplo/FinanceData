@@ -222,19 +222,15 @@ class Indexes(DataSets):
     @try_run
     def update_data(self, code):
         # implementation of update_data method
-        result = {}
         end = 0
         local_data = self.read_data(code)
         remote_data = self.get_data(code)
         if isinstance(remote_data, pd.DataFrame):
-            if isinstance(local_data, pd.DataFrame):
-                if remote_data.fillna('').equals(local_data.fillna('')):
-                    end = 0
-                else:
-                    end = self._data_store.hset('index', code, remote_data)
-            else:
+            if not isinstance(local_data, pd.DataFrame):
                 end = self._data_store.hset('index', code, remote_data)
-        else:
-            end = 0
+            elif not remote_data.fillna('').equals(local_data.fillna('')):
+                end = self._data_store.hset('index', code, remote_data)
+            else:
+                end = 0
 
         return end
